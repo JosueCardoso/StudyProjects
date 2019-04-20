@@ -29,23 +29,37 @@ typedef struct Shedule shedule;
 int size;
 
 //alocar novo nó email
-email *AllocateEmail(){
-    email *newRegister = (email *)malloc(sizeof(email));
-    if(!newRegister){
-        printf("Sem memoria disponivel!\n");
-        exit(1);
-    }else{
+void *AllocateEmail(email *LIST){
+    char option;
+    do{
+        email *newRegister = (email *)malloc(sizeof(email));
         printf("Digite o email: ");
         scanf("%s",&newRegister->email);
-        return newRegister;
-    }
+        newRegister->next=NULL;
+
+        if(LIST->next==NULL){
+            LIST->next=newRegister;
+        }else{
+            email *temp = LIST->next;
+
+            while(temp->next!=NULL){
+                temp=temp->next;
+            }
+            temp->next=newRegister;
+        }
+        printf("Deseja cadastrar outro email?[S/N]\n");
+        printf("Opcao: ");
+        fflush(stdin);
+        scanf("%c",&option);
+        fflush(stdin);
+    }while(option!='n');
 }
 
 //alocar novo nó agenda
 //(Aqui é um nó 'livre'... sem vinculo com nenhuma lista)
 shedule *AllocateShedule(){
     shedule *newRegister = (shedule *)malloc(sizeof(shedule));
-    char option;
+    email *newEmail = (email*)malloc(sizeof(email));
 
     if(!newRegister){
         printf("Sem memoria disponivel!\n");
@@ -57,14 +71,10 @@ shedule *AllocateShedule(){
         printf("Digite o endereco: ");
         scanf("%s",&newRegister->adress);
 
-        do{
-            //alocando um email e apontando para o novo registro da agenda
-            newRegister->email=AllocateEmail();
-            printf("Digitar outro email? [S/N]");
-            fflush(stdin);
-            scanf("%c",&option);
-        }while(option!='n');
+        //alocando um email e apontando para o novo registro da agenda
+        AllocateEmail(newEmail);
 
+        newRegister->email=newEmail;
         return newRegister;
     }
 }
@@ -80,6 +90,8 @@ phone AllocatePhone(shedule *LIST){
 void StartShedule(shedule *LIST){
 
 }
+
+
 
 //inserir no inicio da lista agenda
 void InsertStartShedule(shedule *LIST){
@@ -112,16 +124,14 @@ void InsertPhone(shedule *LIST){
 }
 
 //mostrar todos os emails da lista agenda
-void ShowAllEmail(shedule *LIST){
+void ShowAllEmail(email *LIST){
     email *tempRegister;
     int cont=0;
 
-    //adiciona os emails da lista de agenda para uma lista temporaria de emails
-    tempRegister=LIST->email->next;
-
+    tempRegister=LIST->next;
     while(tempRegister!=NULL){
         cont++;
-        printf("Email %d: %s\n",cont,tempRegister->email);
+        printf("email-%d%s\n",cont,tempRegister->email);
         tempRegister=tempRegister->next;
     }
 }
@@ -135,7 +145,7 @@ void ShowAllSchedule(shedule *LIST){
     while(tempRegister!=NULL){
         printf("Nome: %s\n",tempRegister->name);
         printf("Endereco: %s\n",tempRegister->adress);
-        ShowAllEmail(LIST);
+        ShowAllEmail(tempRegister->email);
         tempRegister=tempRegister->next;
     }
 
