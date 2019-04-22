@@ -3,7 +3,7 @@
 
 //struct responsavel pelo telefone
 struct Phone{
-    int number;
+    char number[12];
     struct Phone *next;
 };
 typedef struct Phone phone;
@@ -27,9 +27,15 @@ typedef struct Shedule shedule;
 
 //tamanho da lista
 int size;
-
-//alocar novo nÛ email
-void *AllocateEmail(email *LIST){
+//verifica se a lista ta vazia
+int vazia(shedule *LIST){
+    if(LIST->next ==NULL){
+        return 1;
+    }else
+        return 0;
+}
+//alocar novo n√≥ email
+email *AllocateEmail(email *LIST){
     char option;
     do{
         email *newRegister = (email *)malloc(sizeof(email));
@@ -50,16 +56,46 @@ void *AllocateEmail(email *LIST){
         printf("Deseja cadastrar outro email?[S/N]\n");
         printf("Opcao: ");
         fflush(stdin);
-        scanf("%c",&option);
+        scanf("%s",&option);
         fflush(stdin);
-    }while(option!='n');
+        if(option == 110){
+            return newRegister;
+        }
+    }while(option!=110);
+}
+//alocar novo n√≥ telefone
+void *AllocatePhone(phone *LIST){
+    char option;
+    do{
+        phone *newRegister = (phone *)malloc(sizeof(phone));
+        printf("Digite o telefone: ");
+        scanf("%s", &newRegister->number);
+        newRegister->next=NULL;
+
+        if(LIST->next==NULL){
+            LIST->next=newRegister;
+        }else{
+            phone *temp = LIST->next;
+
+            while(temp->next!=NULL){
+                temp=temp->next;
+            }
+            temp->next=newRegister;
+        }
+        printf("Deseja cadastrar outro telefone?[S/N]\n");
+        printf("Opcao: ");
+        fflush(stdin);
+        scanf("%s",&option);
+        fflush(stdin);
+    }while(option!=110);
 }
 
-//alocar novo nÛ agenda
-//(Aqui È um nÛ 'livre'... sem vinculo com nenhuma lista)
+//alocar novo n√≥ agenda
+//(Aqui √© um n√≥ 'livre'... sem vinculo com nenhuma lista)
 shedule *AllocateShedule(){
     shedule *newRegister = (shedule *)malloc(sizeof(shedule));
     email *newEmail = (email*)malloc(sizeof(email));
+    phone *newPhone = (phone*)malloc(sizeof(phone));
 
     if(!newRegister){
         printf("Sem memoria disponivel!\n");
@@ -73,22 +109,18 @@ shedule *AllocateShedule(){
 
         //alocando um email e apontando para o novo registro da agenda
         AllocateEmail(newEmail);
+        //alocando telefone    ^^^
+        AllocatePhone(newPhone);
 
         newRegister->email=newEmail;
+        newRegister->phone=newPhone;
         return newRegister;
     }
 }
 
-
-
-//alocar novo nÛ telefone
-phone AllocatePhone(shedule *LIST){
-
-}
-
 //struct para iniciar a agenda
 void StartShedule(shedule *LIST){
-
+    LIST-> next=NULL;
 }
 
 
@@ -105,24 +137,22 @@ void InsertStartShedule(shedule *LIST){
 
 //inserir no fim da lista agenda
 void InsertEndShedule(shedule *LIST){
-
+    shedule *newRegister = AllocateShedule();
+    shedule *temp = LIST->next;
+    if(vazia(LIST)){
+        LIST->next = newRegister;
+    }else{
+        while(temp->next!=NULL){
+            temp = temp->next;
+        }
+        temp->next=newRegister;
+    }
+    
 }
 
-//inserir na posiÁ„o desejada da lista agenda
+//inserir na posi√ß√£o desejada da lista agenda
 void InsertChooseShedule(shedule *LIST){
-
 }
-
-//inserir novo email
-void InsertEmail(shedule *LIST){
-
-}
-
-//inserir novo telefone
-void InsertPhone(shedule *LIST){
-
-}
-
 //mostrar todos os emails da lista agenda
 void ShowAllEmail(email *LIST){
     email *tempRegister;
@@ -131,7 +161,19 @@ void ShowAllEmail(email *LIST){
     tempRegister=LIST->next;
     while(tempRegister!=NULL){
         cont++;
-        printf("email-%d%s\n",cont,tempRegister->email);
+        printf("Email - %d %s\n",cont,tempRegister->email);
+        tempRegister=tempRegister->next;
+    }
+}
+//mostrar todos os telefones da lista agenda
+void ShowAllPhone(phone *LIST){
+    phone *tempRegister;
+    int cont=0;
+
+    tempRegister=LIST->next;
+    while(tempRegister!=NULL){
+        cont++;
+        printf("Telefone - %d %s\n",cont,tempRegister->number);
         tempRegister=tempRegister->next;
     }
 }
@@ -139,72 +181,164 @@ void ShowAllEmail(email *LIST){
 //mostrar a lista agenda
 void ShowAllSchedule(shedule *LIST){
     shedule *tempRegister;
+    int id=0;
 
     tempRegister=LIST->next;
 
     while(tempRegister!=NULL){
+        id++;
+        printf("ID:%d\n", id);
         printf("Nome: %s\n",tempRegister->name);
         printf("Endereco: %s\n",tempRegister->adress);
         ShowAllEmail(tempRegister->email);
+        ShowAllPhone(tempRegister->phone);
+        printf("\n");
         tempRegister=tempRegister->next;
     }
-
+    printf("\n");
 }
-
-
-//mostrar todos os telefones da lista agenda
-void ShowAllPhone(shedule *LIST){}
-
-
+//limpar registros email
+void ClearEmail(email *LIST){
+    email *prox,*atual;
+    atual = LIST->next;
+    while(atual!=NULL){
+        prox = atual->next;
+        free(atual);
+        atual = prox;
+    } 
+}
+//limpar telefone
+void ClearPhone(phone *LIST){
+    phone *prox,*atual;
+    atual = LIST->next;
+    while(atual!=NULL){
+        prox = atual->next;
+        free(atual);
+        atual = prox;
+    }
+}
+//limpar nomes
+void ClearName(shedule *LIST){
+    shedule *prox,*atual;
+    atual = LIST->next;
+    while(atual!=NULL){
+        prox = atual->next;
+        free(atual);
+        atual = prox;
+    }
+}
+void ClearAddr(shedule *LIST){
+    shedule *prox,*atual;
+    char tst[50];
+    atual = LIST->next;
+    while(atual!=NULL){
+        prox = atual->next;
+        free(atual);
+        atual = prox;
+    }
+}
 //zerar as listas
 void ClearAll(shedule *LIST){
-
+    shedule *tmp = LIST->next;
+    //ClearAddr(LIST);
+    while(tmp!=NULL){
+        ClearEmail(tmp->email);
+        ClearPhone(tmp->phone);
+        ClearName(LIST);
+        //ClearAddr(LIST);
+        tmp=tmp->next;
+    }
 }
 
+//pesquisa o id do cadastro a ser matriculado
+int searchMatch(shedule *LIST){
+    system("clear");
+    ShowAllSchedule(LIST);
+    printf("Indique o id do qual sera adicionado:\n");
+    int id;
+    scanf("%d", &id);
+    int idList = 0;
+    shedule *tmp;
+    tmp = LIST->next;
+    while(tmp->next!=NULL && idList < id){
+        if(idList == id){
+            break;
+        }
+        else
+            tmp = tmp->next;
 
-
-//verificar se a lista agenda est· vazia
+        idList++;
+    }
+    return id-1;
+}
+//adicionar mais um email
+void emailPlus(shedule *LIST){
+    email *newEmail = (email*)malloc(sizeof(email));
+    shedule *tmp;
+    tmp = LIST->next;
+    int id = searchMatch(LIST);
+    for(int i =0;i<id;i++){
+        tmp = tmp->next;
+    }
+    AllocateEmail(tmp->email);
+}
+//adicionar mais um telefone
+void phonePlus(shedule *LIST){
+    phone *newPhone = (phone*)malloc(sizeof(phone));
+    shedule *tmp;
+    tmp = LIST->next;
+    int id = searchMatch(LIST);
+    for(int i =0;i<id;i++){
+        tmp = tmp->next;
+    }
+    AllocatePhone(tmp->email);
+}
+//verificar se a lista agenda est√° vazia
 void GetEmptyShedule(shedule *LIST){
 
 }
 
-//verificar se a lista de email est· vazia
+//verificar se a lista de email est√° vazia
 void GetEmptyEmail(shedule *LIST){
 
 }
 
-//verificar se a lista de telefone est· vazia
+//verificar se a lista de telefone est√° vazia
 void GetEmptyPhone(shedule *LIST){
 
 }
 
 void menu(shedule *LIST){
-    int option;
+    int option,id;
 
     do{
         printf("0-Exibir lista\n");
         printf("1-Inserir no inicio\n");
         printf("2-Inserir no final\n");
-        printf("3-Escolher onde inserir\n");
-        printf("4-Retirar do inicio\n");
-        printf("5-Retirar do final\n");
-        printf("6-Escolher onde retirar\n");
-        printf("7-Zerar lista\n");
-        printf("8-Sair\n");
+        printf("3-Inserir email em um cadastro ja existente\n");
+        printf("4-Inserir telefone em um cadastro ja existente\n");
+        printf("5-Retirar do inicio\n");
+        printf("6-Retirar do final\n");
+        printf("7-Escolher onde retirar\n");
+        printf("8-Zerar lista\n");
+        printf("9-Sair\n");
         printf("Digite a opcao: ");
         scanf("%d",&option);
 
 
         switch(option){
             case 0:
+                system("clear");
                 ShowAllSchedule(LIST);
                 break;
             case 1:
                 InsertStartShedule(LIST);
                 break;
             case 2:
+                InsertEndShedule(LIST);
                 break;
             case 3:
+                emailPlus(LIST);
                 break;
             case 4:
                 break;
@@ -215,6 +349,9 @@ void menu(shedule *LIST){
             case 7:
                 break;
             case 8:
+                ClearAll(LIST);
+                break;
+            case 9:
                 system("exit");
                 break;
             default:
