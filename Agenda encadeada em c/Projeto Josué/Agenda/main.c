@@ -35,7 +35,8 @@ int vazia(shedule *LIST){
         return 0;
 }
 //alocar novo nó email
-void *AllocateEmail(email *LIST){
+email *AllocateEmail(email *LIST){
+
     char option;
     do{
         email *newRegister = (email *)malloc(sizeof(email));
@@ -57,9 +58,11 @@ void *AllocateEmail(email *LIST){
         printf("Opcao: ");
         fflush(stdin);
         scanf("%s",&option);
+
         fflush(stdin);
     }while(option!=110);
 }
+
 //alocar novo nó telefone
 void *AllocatePhone(phone *LIST){
     char option;
@@ -73,7 +76,6 @@ void *AllocatePhone(phone *LIST){
             LIST->next=newRegister;
         }else{
             phone *temp = LIST->next;
-
             while(temp->next!=NULL){
                 temp=temp->next;
             }
@@ -86,6 +88,7 @@ void *AllocatePhone(phone *LIST){
         fflush(stdin);
     }while(option!=110);
 }
+
 
 //alocar novo nó agenda
 //(Aqui é um nó 'livre'... sem vinculo com nenhuma lista)
@@ -158,6 +161,7 @@ void ShowAllEmail(email *LIST){
         tempRegister=tempRegister->next;
     }
 }
+
 //mostrar todos os telefones da lista agenda
 void ShowAllPhone(phone *LIST){
     phone *tempRegister;
@@ -189,7 +193,7 @@ void ShowAllSchedule(shedule *LIST){
         tempRegister=tempRegister->next;
     }
     printf("\n");
-}
+
 //inserir na posição desejada da lista agenda
 void InsertChooseShedule(shedule *LIST){
   int pos,count;
@@ -219,6 +223,163 @@ void InsertChooseShedule(shedule *LIST){
       }else
         printf("Elemento invalido\n\n");  
 }
+  
+//pesquisa o id do cadastro a ser matriculado
+int searchMatch(shedule *LIST){
+    system("clear");
+    ShowAllSchedule(LIST);
+    printf("Indique o id do qual sera adicionado:\n");
+    int id;
+    scanf("%d", &id);
+    int idList = 0;
+    shedule *tmp;
+    tmp = LIST->next;
+    while(tmp->next!=NULL && idList < id){
+        if(idList == id){
+            break;
+        }
+        else
+            tmp = tmp->next;
+
+        idList++;
+    }
+    return id-1;
+}
+  
+//adicionar mais um email
+void emailPlus(shedule *LIST){
+    email *newEmail = (email*)malloc(sizeof(email));
+    shedule *tmp;
+    tmp = LIST->next;
+    int id = searchMatch(LIST);
+    for(int i =0;i<id;i++){
+        tmp = tmp->next;
+    }
+    AllocateEmail(tmp->email);
+}
+  
+//adicionar mais um telefone
+void phonePlus(shedule *LIST){
+    phone *newPhone = (phone*)malloc(sizeof(phone));
+    shedule *tmp;
+    tmp = LIST->next;
+    int id = searchMatch(LIST);
+    for(int i =0;i<id;i++){
+        tmp = tmp->next;
+    }
+    AllocatePhone(tmp->phone);
+}
+  
+//remove nó do inicio
+void StartRemove(shedule *LIST){
+  if(LIST->next == NULL){
+    printf("Lista ja esta vazia\n");
+  }else{
+    shedule *tmp = LIST->next;
+    LIST->next = tmp->next;
+  }
+}
+//remove nó do final
+void EndRemove(shedule *LIST){
+  if(LIST->next == NULL){
+    printf("Lista ja vazia\n\n");
+  }else{
+    shedule *ultimo = LIST->next,
+    *penultimo = LIST;
+    while(ultimo->next != NULL){
+        penultimo = ultimo;
+        ultimo = ultimo->next;
+    }
+    penultimo->next= NULL;
+  }
+}
+  
+//remove nó de um ponto especifico
+void SpecificRemove(shedule *LIST){
+    int opt;
+    int count = 0;
+    ShowAllSchedule(LIST);
+    printf("Que posicao voce deseja retirar?\n ");
+    scanf("%d", &opt);
+
+    if(opt>0){
+        if(opt==1)
+            StartRemove(LIST);
+        else{
+            shedule *atual = LIST->next,*anterior=LIST; 
+
+            for(count=1 ; count < opt ; count++){
+                anterior=atual;
+                atual=atual->next;
+                if(atual == NULL){
+                    printf("Opcao de id invalida");
+                    break;
+                }
+            }
+            anterior->next=atual->next;
+        }
+    }else{
+    printf("Elemento invalido\n\n");    
+    }
+}
+
+}
+//limpar registros email
+void ClearEmail(email *LIST){
+    email *prox,*atual;
+    atual = LIST->next;
+    while(atual!=NULL){
+        prox = atual->next;
+        free(atual);
+        atual = prox;
+    } 
+}
+//limpar telefone
+void ClearPhone(phone *LIST){
+    phone *prox,*atual;
+    atual = LIST->next;
+    while(atual!=NULL){
+        prox = atual->next;
+        free(atual);
+        atual = prox;
+    }
+}
+
+//limpar nomes
+void ClearName(shedule *LIST){
+    shedule *prox,*atual;
+    atual = LIST->next;
+    while(atual!=NULL){
+        prox = atual->next;
+        free(atual);
+        atual = prox;
+    }
+}
+
+void ClearAddr(shedule *LIST){
+    shedule *prox,*atual;
+    char tst[50];
+    atual = LIST->next;
+    while(atual!=NULL){
+        prox = atual->next;
+        free(atual);
+        atual = prox;
+    }
+}
+
+//zerar as listas
+void ClearAll(shedule *LIST){
+    shedule *tmp = LIST->next;
+    //ClearAddr(LIST);
+    while(tmp!=NULL){
+        ClearEmail(tmp->email);
+        ClearPhone(tmp->phone);
+        ClearName(LIST);
+        //ClearAddr(LIST);
+        tmp=tmp->next;
+    }
+}
+
 //pesquisa o id do cadastro a ser matriculado
 int searchMatch(shedule *LIST){
     system("clear");
@@ -260,100 +421,10 @@ void phonePlus(shedule *LIST){
     for(int i =0;i<id;i++){
         tmp = tmp->next;
     }
-    AllocatePhone(tmp->phone);
+    AllocatePhone(tmp->email);
 }
-//remove nó do inicio
-void StartRemove(shedule *LIST){
-  if(LIST->next == NULL){
-    printf("Lista ja esta vazia\n");
-  }else{
-    shedule *tmp = LIST->next;
-    LIST->next = tmp->next;
-  }
-}
-//remove nó do final
-void EndRemove(shedule *LIST){
-  if(LIST->next == NULL){
-    printf("Lista ja vazia\n\n");
-  }else{
-    shedule *ultimo = LIST->next,
-    *penultimo = LIST;
-    while(ultimo->next != NULL){
-        penultimo = ultimo;
-        ultimo = ultimo->next;
-    }
-    penultimo->next= NULL;
-  }
-}
-//remove nó de um ponto especifico
-void SpecificRemove(shedule *LIST){
-    int opt;
-    int count = 0;
-    ShowAllSchedule(LIST);
-    printf("Que posicao voce deseja retirar?\n ");
-    scanf("%d", &opt);
-
-    if(opt>0){
-        if(opt==1)
-            StartRemove(LIST);
-        else{
-            shedule *atual = LIST->next,*anterior=LIST; 
-
-            for(count=1 ; count < opt ; count++){
-                anterior=atual;
-                atual=atual->next;
-                if(atual == NULL){
-                    printf("Opcao de id invalida");
-                    break;
-                }
-            }
-            anterior->next=atual->next;
-        }
-    }else{
-    printf("Elemento invalido\n\n");    
-    }
-}
-//limpar registros email
-void ClearEmail(email *LIST){
-    email *prox,*atual;
-    atual = LIST->next;
-    while(atual!=NULL){
-        prox = atual->next;
-        free(atual);
-        atual = prox;
-    } 
-}
-//limpar telefone
-void ClearPhone(phone *LIST){
-    phone *prox,*atual;
-    atual = LIST->next;
-    while(atual!=NULL){
-        prox = atual->next;
-        free(atual);
-        atual = prox;
-    }
-}
-//limpar nomes
-void ClearName(shedule *LIST){
-    shedule *prox,*atual;
-    atual = LIST->next;
-    while(atual!=NULL){
-        prox = atual->next;
-        free(atual);
-        atual = prox;
-    }
-}
-//zerar as listas
-void ClearAll(shedule *LIST){
-    shedule *tmp = LIST->next;
-    //ClearAddr(LIST);
-    while(tmp!=NULL){
-        ClearEmail(tmp->email);
-        ClearPhone(tmp->phone);
-        ClearName(LIST);
-        //ClearAddr(LIST);
-        tmp=tmp->next;
-    }
+//verificar se a lista agenda está vazia
+void GetEmptyShedule(shedule *LIST){
 }
 
 //verificar se a lista de email está vazia
